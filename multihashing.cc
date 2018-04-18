@@ -399,20 +399,7 @@ Handle<Value> shavite3(const Arguments& args) {
 Handle<Value> cryptonight(const Arguments& args) {
     HandleScope scope;
 
-    bool fast = false;
-    uint32_t cn_variant = 0;
-
-    if (args.Length() < 1)
-        return except("You must provide one argument.");
-    
-    if (args.Length() >= 2) {
-        if(args[1]->IsBoolean())
-            fast = args[1]->ToBoolean()->BooleanValue();
-	else if(args[1]->IsUint32())
-            cn_variant = args[1]->ToUint32()->Uint32Value();
-	else
-            return except("Argument 2 should be a boolean or uint32_t");
-    }
+    uint32_t cn_variant = 1;
 
     Local<Object> target = args[0]->ToObject();
 
@@ -424,13 +411,10 @@ Handle<Value> cryptonight(const Arguments& args) {
     
     uint32_t input_len = Buffer::Length(target);
 
-    if(fast)
-        cryptonight_fast_hash(input, output, input_len);
-    else {
-        if (cn_variant > 0 && input_len < 43)
-            return except("Argument must be 43 bytes for monero variant 1+");
-        cryptonight_hash(input, output, input_len, cn_variant);
-    }
+    if (cn_variant > 0 && input_len < 43)
+        return except("Argument must be 43 bytes for monero variant 1+");
+    cryptonight_hash(input, output, input_len, cn_variant);
+	
     Buffer* buff = Buffer::New(output, 32);
     return scope.Close(buff->handle_);
 }
